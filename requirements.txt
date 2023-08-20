@@ -1,2 +1,6 @@
 pypdf
 doc2txt
+streamlitchat
+streamlit
+openai
+langchain
