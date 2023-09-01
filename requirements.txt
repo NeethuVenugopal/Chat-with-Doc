@@ -1,6 +1,6 @@
 pypdf
 doc2txt
-streamlitchat
+streamlit-chat
 streamlit
 openai
 langchain

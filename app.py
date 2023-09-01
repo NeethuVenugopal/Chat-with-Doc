@@ -1,16 +1,15 @@
 
 import streamlit as st
 from streamlit_chat import message
-
-import streamlit as st
 import tempfile
-import sys
 import os
+
 from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from langchain.chains import RetrievalQA, ConversationalRetrievalChain
+from langchain.chains import ConversationalRetrievalChain
 
 from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import TextLoader
@@ -62,7 +61,6 @@ def process_docs(uploads):
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             tmp_file.write(file.read())
             filename = file.name
-            print(filename)
             if filename.endswith('.pdf'):
                 loader = PyPDFLoader(tmp_file.name)
                 documents.extend(loader.load())
@@ -79,6 +77,7 @@ if upload_button:
     with st.spinner('Uploading...'):
         if uploaded_file is not None:
             documents = process_docs(uploaded_file)
+            print(documents)
         # Split documents into chunks
         text_splitter = CharacterTextSplitter(chunk_size=1200, chunk_overlap=10)
         texts = text_splitter.split_documents(documents)
@@ -121,11 +120,12 @@ def generate_response(prompt, texts, embeddings):
     # Create retriever interface
     retriever = db.as_retriever(search_kwargs={'k': 7})
     qa_chain = ConversationalRetrievalChain.from_llm(
-    llm=OpenAI(openai_api_key=openai_api_key),
+    llm=ChatOpenAI(model = model, openai_api_key=openai_api_key),
     retriever  = retriever,
     return_source_documents=True
     )
     response =  qa_chain({'question': prompt, 'chat_history': st.session_state['messages']})
+    print(model)
     st.session_state['messages'].append((prompt, response['answer']))
     return response
 
