@@ -42,9 +42,7 @@ if 'messages' not in st.session_state:
     st.session_state['messages'] = []
 if 'model_name' not in st.session_state:
     st.session_state['model_name'] = []
-if 'data_dir' not in st.session_state:
-    clear_directory(DIR_PATH)
-    st.session_state['data_dir'] = ""
+
 
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
@@ -108,14 +106,12 @@ if clear_button:
     st.session_state['texts'] = []
     st.session_state['embeddings'] = []
     clear_directory(DIR_PATH)
-    st.session_state['data_dir'] = ""
 
 
 
 # generate a response
-def generate_response(prompt, texts, embeddings):
-    st.session_state['data_dir'] = DIR_PATH
-    db = Chroma.from_documents(texts, embedding = embeddings,persist_directory = st.session_state['data_dir'])
+def generate_response(prompt, texts, embeddings, chat_history):
+    db = Chroma.from_documents(texts, embedding = embeddings,persist_directory = DIR_PATH)
     db.persist()
     # Create retriever interface
     retriever = db.as_retriever(search_kwargs={'k': 7})
@@ -124,9 +120,7 @@ def generate_response(prompt, texts, embeddings):
     retriever  = retriever,
     return_source_documents=True
     )
-    response =  qa_chain({'question': prompt, 'chat_history': st.session_state['messages']})
-    print(model)
-    st.session_state['messages'].append((prompt, response['answer']))
+    response =  qa_chain({'question': prompt, 'chat_history': chat_history})
     return response
 
 
@@ -141,9 +135,10 @@ with container:
         submit_button = st.form_submit_button(label='Send')
 
     if submit_button and user_input:
-        output = generate_response(user_input, st.session_state['texts'], st.session_state['embeddings'])
+        output = generate_response(user_input, st.session_state['texts'], st.session_state['embeddings'], st.session_state['messages'])
         st.session_state['past'].append(user_input)
         st.session_state['generated'].append(output['answer'])
+        st.session_state['messages'].append((user_input, output['answer']))
         st.session_state['model_name'].append(model_name)
        
         
