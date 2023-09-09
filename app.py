@@ -32,7 +32,6 @@ def clear_directory(directory_path):
     else:
         st.warning(f'The directory with path {directory_path} doesnt exist', icon="⚠️")
 
-
 # Initialise session state variables
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
@@ -42,15 +41,26 @@ if 'messages' not in st.session_state:
     st.session_state['messages'] = []
 if 'model_name' not in st.session_state:
     st.session_state['model_name'] = []
+if 'dir_path' not in st.session_state:
+    st.session_state['dir_path'] = DIR_PATH
+    clear_directory(DIR_PATH)
+if 'file_uploader_key' not in  st.session_state:
+    st.session_state["file_uploader_key"] = 0
+
+
+
 
 
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
 openai_api_key = st.sidebar.text_input('OpenAI API Key', type='password')
-uploaded_file = st.sidebar.file_uploader('Choose Files and Click Upload Files', type=['txt','pdf','doc','docx'], accept_multiple_files= True)
+uploaded_file = st.sidebar.file_uploader('Choose Files and Click Upload Files',
+                                          type=['txt','pdf','doc','docx'], 
+                                          accept_multiple_files= True,
+                                          key=st.session_state["file_uploader_key"])
 upload_button = st.sidebar.button("Upload Files", key="upload")
 model_name = st.sidebar.radio("Choose a model:", ("GPT-3.5", "GPT-4"))
-counter_placeholder = st.sidebar.empty()
+# counter_placeholder = st.sidebar.empty()
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
 
 def process_docs(uploads):
@@ -98,14 +108,12 @@ if clear_button:
     st.session_state['generated'] = []
     st.session_state['past'] = []
     st.session_state['messages'] = []
-    st.session_state['number_tokens'] = []
     st.session_state['model_name'] = []
-    st.session_state['cost'] = []
-    st.session_state['total_cost'] = 0.0
-    st.session_state['total_tokens'] = []
     st.session_state['texts'] = []
     st.session_state['embeddings'] = []
     clear_directory(DIR_PATH)
+    st.session_state["file_uploader_key"] += 1
+    st.experimental_rerun()
 
 
 
@@ -115,6 +123,7 @@ def generate_response(prompt, texts, embeddings, chat_history):
     db.persist()
     # Create retriever interface
     retriever = db.as_retriever(search_kwargs={'k': 7})
+    print(model)
     qa_chain = ConversationalRetrievalChain.from_llm(
     llm=ChatOpenAI(model = model, openai_api_key=openai_api_key),
     retriever  = retriever,
@@ -135,11 +144,14 @@ with container:
         submit_button = st.form_submit_button(label='Send')
 
     if submit_button and user_input:
-        output = generate_response(user_input, st.session_state['texts'], st.session_state['embeddings'], st.session_state['messages'])
-        st.session_state['past'].append(user_input)
-        st.session_state['generated'].append(output['answer'])
-        st.session_state['messages'].append((user_input, output['answer']))
-        st.session_state['model_name'].append(model_name)
+        if st.session_state['embeddings']:
+            output = generate_response(user_input, st.session_state['texts'], st.session_state['embeddings'], st.session_state['messages'])
+            st.session_state['past'].append(user_input)
+            st.session_state['generated'].append(output['answer'])
+            st.session_state['messages'].append((user_input, output['answer']))
+            st.session_state['model_name'].append(model_name)
+        else:
+            st.warning(f'No files uploaded', icon="⚠️")
        
         
 
