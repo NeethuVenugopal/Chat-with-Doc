@@ -45,7 +45,7 @@ if 'dir_path' not in st.session_state:
     st.session_state['dir_path'] = DIR_PATH
     clear_directory(DIR_PATH)
 if 'file_uploader_key' not in  st.session_state:
-    st.session_state["file_uploader_key"] = 1000
+    st.session_state["file_uploader_key"] = 0
 
 
 
