@@ -46,6 +46,8 @@ if 'dir_path' not in st.session_state:
     clear_directory(DIR_PATH)
 if 'file_uploader_key' not in  st.session_state:
     st.session_state["file_uploader_key"] = 0
+if 'embeddings' not in  st.session_state:
+    st.session_state['embeddings'] = []
 
 
 
@@ -159,5 +161,5 @@ if st.session_state['generated']:
     with response_container:
         for i in range(len(st.session_state['generated'])):
             message(st.session_state["past"][i], is_user=True, key=str(i) + '_user')
-            message(st.session_state["generated"][i], key=str(i))
+            message(st.session_state["generated"][i], key=str(i) + '_bot' )
            
