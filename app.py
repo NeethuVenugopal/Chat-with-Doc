@@ -15,6 +15,13 @@ from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import TextLoader
 from langchain.document_loaders import PyPDFLoader
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+openai_api_key = os.getenv('OPENAI_KEY')
+
 DIR_PATH = "./data"
 # Setting page title and header
 st.set_page_config(page_title="ChatwithDoc", page_icon="	:page_with_curl:")
@@ -55,7 +62,7 @@ if 'embeddings' not in  st.session_state:
 
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
-openai_api_key = st.sidebar.text_input('OpenAI API Key', type='password')
+# openai_api_key = st.sidebar.text_input('OpenAI API Key', type='password')
 uploaded_file = st.sidebar.file_uploader('Choose Files and Click Upload Files',
                                           type=['txt','pdf','doc','docx'], 
                                           accept_multiple_files= True,
