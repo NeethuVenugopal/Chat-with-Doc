@@ -15,12 +15,6 @@ from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import TextLoader
 from langchain.document_loaders import PyPDFLoader
 
-from dotenv import load_dotenv
-
-
-load_dotenv()
-
-openai_api_key = os.getenv('OPENAI_KEY')
 
 DIR_PATH = "./data"
 # Setting page title and header
@@ -59,17 +53,15 @@ if 'embeddings' not in  st.session_state:
 
 
 
-
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
-# openai_api_key = st.sidebar.text_input('OpenAI API Key', type='password')
+openai_api_key = st.sidebar.text_input('OpenAI API Key', type='password')
 uploaded_file = st.sidebar.file_uploader('Choose Files and Click Upload Files',
                                           type=['txt','pdf','doc','docx'], 
                                           accept_multiple_files= True,
                                           key=st.session_state["file_uploader_key"])
 upload_button = st.sidebar.button("Upload Files", key="upload")
 model_name = st.sidebar.radio("Choose a model:", ("GPT-3.5", "GPT-4"))
-# counter_placeholder = st.sidebar.empty()
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
 
 def process_docs(uploads):
@@ -134,7 +126,7 @@ def generate_response(prompt, texts, embeddings, chat_history):
     retriever = db.as_retriever(search_kwargs={'k': 7})
     print(model)
     qa_chain = ConversationalRetrievalChain.from_llm(
-    llm=ChatOpenAI(model = model, openai_api_key=openai_api_key),
+    llm=ChatOpenAI(model = model, openai_api_key= openai_api_key),
     retriever  = retriever,
     return_source_documents=True
     )
